@@ -1,6 +1,15 @@
 import React from 'react';
 
-function PastEntries({ entries, onDateClick, onDelete, currentDate, searchQuery, onSearchChange }) {
+function PastEntries({
+  entries,
+  onDateClick,
+  onDelete,
+  currentDate,
+  searchQuery,
+  onSearchChange,
+  onClearSearch,
+  onBackToWriting
+}) {
   const sortedDates = Object.keys(entries).sort().reverse();
 
   function formatDate(dateStr) {
@@ -20,6 +29,16 @@ function PastEntries({ entries, onDateClick, onDelete, currentDate, searchQuery,
   if (sortedDates.length === 0) {
     return (
       <div className="past-entries">
+        <div className="past-actions">
+          <button type="button" className="btn-secondary" onClick={onBackToWriting}>
+            back to writing
+          </button>
+          {searchQuery && (
+            <button type="button" className="btn-secondary" onClick={onClearSearch}>
+              clear search
+            </button>
+          )}
+        </div>
         <h2>Past Entries</h2>
         <p className="empty-state">
           {searchQuery ? `No matches for “${searchQuery}”.` : 'No entries yet. Start writing!'}
@@ -30,6 +49,16 @@ function PastEntries({ entries, onDateClick, onDelete, currentDate, searchQuery,
 
   return (
     <div className="past-entries">
+      <div className="past-actions">
+        <button type="button" className="btn-secondary" onClick={onBackToWriting}>
+          back to writing
+        </button>
+        {searchQuery && (
+          <button type="button" className="btn-secondary" onClick={onClearSearch}>
+            clear search
+          </button>
+        )}
+      </div>
       <div className="past-header">
         <h2>Past Entries</h2>
         <p>{sortedDates.length} saved {sortedDates.length === 1 ? 'entry' : 'entries'}</p>

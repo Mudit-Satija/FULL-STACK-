@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
-function WriteArea({ date, text, onChange, isToday, onPreviousDay, onNextDay, canGoNext }) {
+function WriteArea({
+  date,
+  text,
+  onChange,
+  onExportCurrentTxt,
+  isToday,
+  onPreviousDay,
+  onNextDay,
+  canGoNext
+}) {
   const [lastSaved, setLastSaved] = useState('');
 
   useEffect(() => {
@@ -32,6 +41,9 @@ function WriteArea({ date, text, onChange, isToday, onPreviousDay, onNextDay, ca
   return (
     <div className="write-area">
       <div className="write-toolbar">
+        <button onClick={onExportCurrentTxt} className="toolbar-btn">
+          export this day
+        </button>
         <button onClick={onPreviousDay} className="toolbar-btn">
           previous
         </button>

@@ -2,8 +2,23 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Header from './components/Header';
 import WriteArea from './components/WriteArea';
 import PastEntries from './components/PastEntries';
+import StreakDisplay from './components/StreakDisplay';
+import AchievementsPage from './components/AchievementsPage';
+import CalendarHeatmap from './components/CalendarHeatmap';
+import ExportTxtPanel from './components/ExportTxtPanel';
+import {
+  buildBadgeState,
+  buildHeatmapData,
+  buildTxtDocumentFromEntries,
+  calculateStreakStats,
+  getTodayDate,
+  sanitizeDateRange
+} from './utils/journalHelpers';
 
 const STORAGE_KEY = 'dailyDumpEntries';
+const STREAK_STORAGE_KEY = 'dailyDumpStreak';
+const BADGE_STORAGE_KEY = 'dailyDumpBadges';
+const THEME_STORAGE_KEY = 'dailyDumpTheme';
 
 function loadSavedEntries() {
   try {
@@ -34,17 +49,87 @@ function sanitizeImportedEntries(payload) {
   return cleanedEntries;
 }
 
+function getStoredJson(key, fallbackValue) {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : fallbackValue;
+  } catch (error) {
+    return fallbackValue;
+  }
+}
+
+function getPreferredTheme() {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+  if (storedTheme === 'dark' || storedTheme === 'light') {
+    return storedTheme;
+  }
+
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+
+  return 'light';
+}
+
+function downloadTextFile(fileName, content) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(downloadUrl);
+}
+
 function App() {
+  const [activePage, setActivePage] = useState('journal');
   const [currentDate, setCurrentDate] = useState(getTodayDate());
   const [entries, setEntries] = useState(loadSavedEntries);
+  const [streakStats, setStreakStats] = useState(() => getStoredJson(STREAK_STORAGE_KEY, {
+    currentStreak: 0,
+    longestStreak: 0,
+    totalEntries: 0,
+    lastEntryDate: null,
+    activeDates: []
+  }));
+  const [badgeProgress, setBadgeProgress] = useState(() => getStoredJson(BADGE_STORAGE_KEY, {}));
+  const [theme, setTheme] = useState(getPreferredTheme);
   const [showPastEntries, setShowPastEntries] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const importInputRef = useRef(null);
 
+  const entryDates = useMemo(() => Object.keys(entries).sort(), [entries]);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   }, [entries]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  useEffect(() => {
+    const nextStreakStats = calculateStreakStats(entries);
+    setStreakStats(nextStreakStats);
+    localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(nextStreakStats));
+
+    setBadgeProgress((previous) => {
+      const { unlockedMap } = buildBadgeState(previous, nextStreakStats);
+
+      if (JSON.stringify(previous) === JSON.stringify(unlockedMap)) {
+        return previous;
+      }
+
+      return unlockedMap;
+    });
+  }, [entries]);
+
+  useEffect(() => {
+    localStorage.setItem(BADGE_STORAGE_KEY, JSON.stringify(badgeProgress));
+  }, [badgeProgress]);
 
   useEffect(() => {
     if (!statusMessage) {
@@ -55,30 +140,19 @@ function App() {
     return () => window.clearTimeout(timeoutId);
   }, [statusMessage]);
 
-  function getTodayDate() {
-    const today = new Date();
-    return today.toISOString().split('T')[0]; 
-  }
-
-  function getEntryDates() {
-    return Object.keys(entries).sort();
-  }
-
   function handlePreviousDay() {
-    const dates = getEntryDates();
-    const currentIndex = dates.indexOf(currentDate);
+    const currentIndex = entryDates.indexOf(currentDate);
 
     if (currentIndex > 0) {
-      handleDateClick(dates[currentIndex - 1]);
+      handleDateClick(entryDates[currentIndex - 1]);
     }
   }
 
   function handleNextDay() {
-    const dates = getEntryDates();
-    const currentIndex = dates.indexOf(currentDate);
+    const currentIndex = entryDates.indexOf(currentDate);
 
-    if (currentIndex >= 0 && currentIndex < dates.length - 1) {
-      handleDateClick(dates[currentIndex + 1]);
+    if (currentIndex >= 0 && currentIndex < entryDates.length - 1) {
+      handleDateClick(entryDates[currentIndex + 1]);
       return;
     }
 
@@ -97,6 +171,12 @@ function App() {
   function handleDateClick(date) {
     setCurrentDate(date);
     setShowPastEntries(false);
+    setSearchQuery('');
+    setActivePage('journal');
+  }
+
+  function handleToggleTheme() {
+    setTheme((previousTheme) => (previousTheme === 'dark' ? 'light' : 'dark'));
   }
 
   function handleDelete(date) {
@@ -112,6 +192,28 @@ function App() {
   function handleNewEntry() {
     setCurrentDate(getTodayDate());
     setShowPastEntries(false);
+    setSearchQuery('');
+    setActivePage('journal');
+  }
+
+  function handleTogglePastEntries() {
+    const nextShowPastEntries = !showPastEntries;
+    setActivePage('journal');
+    setShowPastEntries(nextShowPastEntries);
+
+    if (!nextShowPastEntries) {
+      setSearchQuery('');
+    }
+  }
+
+  function handleGoToJournal() {
+    setActivePage('journal');
+  }
+
+  function handleGoToAchievements() {
+    setActivePage('achievements');
+    setShowPastEntries(false);
+    setSearchQuery('');
   }
 
   function handleExportEntries() {
@@ -129,6 +231,48 @@ function App() {
     link.click();
     URL.revokeObjectURL(downloadUrl);
     setStatusMessage('Backup exported.');
+  }
+
+  function handleExportCurrentEntryTxt() {
+    const content = buildTxtDocumentFromEntries(entries, [currentDate]);
+    downloadTextFile(`entry-${currentDate}.txt`, content);
+    setStatusMessage(`Exported ${currentDate} as TXT.`);
+  }
+
+  function handleExportAllEntriesTxt() {
+    if (entryDates.length === 0) {
+      setStatusMessage('No entries available for TXT export.');
+      return;
+    }
+
+    const content = buildTxtDocumentFromEntries(entries, entryDates);
+    downloadTextFile(`daily-dump-all-${getTodayDate()}.txt`, content);
+    setStatusMessage(`Exported ${entryDates.length} entries as TXT.`);
+  }
+
+  function handleExportRangeTxt(startDate, endDate) {
+    if (entryDates.length === 0) {
+      setStatusMessage('No entries available for TXT export.');
+      return;
+    }
+
+    const range = sanitizeDateRange(startDate, endDate);
+
+    if (!range) {
+      setStatusMessage('Invalid date range.');
+      return;
+    }
+
+    const selectedDates = entryDates.filter((date) => date >= range.startDate && date <= range.endDate);
+
+    if (selectedDates.length === 0) {
+      setStatusMessage('No entries found in that range.');
+      return;
+    }
+
+    const content = buildTxtDocumentFromEntries(entries, selectedDates);
+    downloadTextFile(`daily-dump-${range.startDate}-to-${range.endDate}.txt`, content);
+    setStatusMessage(`Exported ${selectedDates.length} entries as TXT.`);
   }
 
   function handleImportClick() {
@@ -185,6 +329,9 @@ function App() {
     }, {});
   }, [entries, searchQuery]);
 
+  const badgeState = useMemo(() => buildBadgeState(badgeProgress, streakStats), [badgeProgress, streakStats]);
+  const heatmapDays = useMemo(() => buildHeatmapData(entries), [entries]);
+
   return (
     <div className="app">
       <input
@@ -194,35 +341,72 @@ function App() {
         className="visually-hidden"
         onChange={handleImportFileChange}
       />
-      <Header 
-        onTogglePastEntries={() => setShowPastEntries(!showPastEntries)}
+      <Header
+        activePage={activePage}
+        onGoToJournal={handleGoToJournal}
+        onGoToAchievements={handleGoToAchievements}
+        onTogglePastEntries={handleTogglePastEntries}
         onNewEntry={handleNewEntry}
         onExportEntries={handleExportEntries}
         onImportEntries={handleImportClick}
+        onToggleTheme={handleToggleTheme}
+        theme={theme}
         showingPast={showPastEntries}
       />
 
       {statusMessage && <div className="status-banner">{statusMessage}</div>}
-      
-      {showPastEntries ? (
-        <PastEntries 
-          entries={filteredEntries}
-          onDateClick={handleDateClick}
-          onDelete={handleDelete}
-          currentDate={currentDate}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
+
+      {activePage === 'achievements' ? (
+        <AchievementsPage badges={badgeState.badges} streakStats={streakStats} />
       ) : (
-        <WriteArea 
-          date={currentDate}
-          text={entries[currentDate] || ''}
-          onChange={handleTextChange}
-          isToday={currentDate === getTodayDate()}
-          onPreviousDay={handlePreviousDay}
-          onNextDay={handleNextDay}
-          canGoNext={currentDate !== getTodayDate()}
-        />
+        <>
+          <div className="insights-grid">
+            <StreakDisplay
+              currentStreak={streakStats.currentStreak}
+              longestStreak={streakStats.longestStreak}
+              totalEntries={streakStats.totalEntries}
+            />
+          </div>
+
+          <CalendarHeatmap
+            days={heatmapDays}
+            currentDate={currentDate}
+            onDateClick={handleDateClick}
+          />
+
+          <ExportTxtPanel
+            availableDates={entryDates}
+            onExportRange={handleExportRangeTxt}
+            onExportAllTxt={handleExportAllEntriesTxt}
+          />
+
+          {showPastEntries ? (
+            <PastEntries
+              entries={filteredEntries}
+              onDateClick={handleDateClick}
+              onDelete={handleDelete}
+              currentDate={currentDate}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onClearSearch={() => setSearchQuery('')}
+              onBackToWriting={() => {
+                setShowPastEntries(false);
+                setSearchQuery('');
+              }}
+            />
+          ) : (
+            <WriteArea
+              date={currentDate}
+              text={entries[currentDate] || ''}
+              onChange={handleTextChange}
+              onExportCurrentTxt={handleExportCurrentEntryTxt}
+              isToday={currentDate === getTodayDate()}
+              onPreviousDay={handlePreviousDay}
+              onNextDay={handleNextDay}
+              canGoNext={currentDate !== getTodayDate()}
+            />
+          )}
+        </>
       )}
     </div>
   );
