@@ -13,6 +13,15 @@ Daily Dump is a small React journaling app for writing short daily notes, browsi
 - Dedicated achievements page with expanded milestones
 - Store data locally in the browser
 
+## Recommended Deployment
+
+Use Vercel for the React frontend and Render for any backend API you add later.
+
+- Frontend: Vercel
+- API/backend: Render
+
+This repo currently ships the frontend app and a small API client scaffold. The React app still works without a backend because it stores data locally in the browser.
+
 ## Development
 
 Install dependencies:
@@ -39,31 +48,29 @@ npm run build
 - `src/components/Header.js` - top-level controls
 - `src/components/WriteArea.js` - editor for the current entry
 - `src/components/PastEntries.js` - history and search view
+- `src/config.js` - frontend environment config
+- `src/utils/api.js` - fetch helper for a future API backend
 
-## Streamlit Version
+## Vercel Deployment
 
-This repository also includes a Streamlit implementation for deployment on Streamlit Cloud:
+1. Push this repo to GitHub.
+2. Import the repo into Vercel.
+3. Set the root directory to `FULL-STACK`.
+4. Use the default React build command: `npm run build`.
+5. Leave the output directory as `build`.
+6. Add `REACT_APP_API_BASE_URL` if you connect a backend.
 
-- `streamlit_app.py` - Streamlit app
-- `requirements.txt` - Python dependencies for Streamlit Cloud
-- `.streamlit/config.toml` - Streamlit theme config
+The included [vercel.json](vercel.json) handles SPA routing so refreshes work correctly.
 
-Run locally:
+## Render API Backend
 
-```bash
-pip install -r requirements.txt
-streamlit run streamlit_app.py
-```
+If you add API routes later, deploy that backend separately on Render.
 
-Deploy on Streamlit Cloud with GitHub:
+- Give the backend a public URL.
+- Set that URL in `REACT_APP_API_BASE_URL` on Vercel.
+- Keep frontend and backend deployments independent.
 
-1. Push this project to a GitHub repository.
-2. Go to Streamlit Cloud and click **New app**.
-3. Select your GitHub repo and branch.
-4. Set main file path to `streamlit_app.py`.
-5. Deploy.
-
-Streamlit Cloud will install dependencies from `requirements.txt` automatically.
+If you prefer Railway, you can use it the same way, but Render is the simpler fit for this repo.
 
 ## Notes
 
