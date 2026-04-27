@@ -99,22 +99,273 @@ def init_state() -> None:
         st.session_state.current_date = date.today()
 
 
+def inject_styles() -> None:
+        st.markdown(
+                """
+                <style>
+                    .stApp {
+                        background:
+                            radial-gradient(circle at top left, rgba(47, 110, 87, 0.10), transparent 26%),
+                            radial-gradient(circle at top right, rgba(95, 143, 123, 0.10), transparent 20%),
+                            linear-gradient(180deg, #f5f6f2 0%, #eef2eb 100%);
+                        color: #1f2a23;
+                    }
+
+                    [data-testid="stHeader"],
+                    [data-testid="stToolbar"],
+                    #MainMenu,
+                    footer {
+                        visibility: hidden;
+                        height: 0;
+                    }
+
+                    section[data-testid="stSidebar"] {
+                        display: none;
+                    }
+
+                    .block-container {
+                        padding-top: 2.2rem;
+                        padding-bottom: 2.5rem;
+                        max-width: 1120px;
+                    }
+
+                    .hero {
+                        padding: 1.35rem 1.35rem 1.2rem;
+                        border: 1px solid rgba(31, 42, 35, 0.08);
+                        border-radius: 22px;
+                        background: rgba(255, 255, 255, 0.72);
+                        backdrop-filter: blur(12px);
+                        box-shadow: 0 20px 48px rgba(25, 43, 34, 0.08);
+                        margin-bottom: 1rem;
+                    }
+
+                    .eyebrow {
+                        text-transform: uppercase;
+                        letter-spacing: 0.14em;
+                        font-size: 0.73rem;
+                        color: #5d6c63;
+                        margin-bottom: 0.45rem;
+                    }
+
+                    .hero h1 {
+                        margin: 0;
+                        font-size: clamp(2rem, 4vw, 3.4rem);
+                        line-height: 0.98;
+                        letter-spacing: -0.05em;
+                    }
+
+                    .hero p {
+                        margin: 0.75rem 0 0;
+                        color: #5b675f;
+                        max-width: 66ch;
+                    }
+
+                    .metric-card,
+                    .surface-card {
+                        background: rgba(255, 255, 255, 0.84);
+                        border: 1px solid rgba(31, 42, 35, 0.08);
+                        border-radius: 18px;
+                        box-shadow: 0 12px 32px rgba(25, 43, 34, 0.06);
+                    }
+
+                    .metric-card {
+                        padding: 1rem 1rem 0.9rem;
+                    }
+
+                    .metric-label {
+                        color: #5b675f;
+                        font-size: 0.78rem;
+                        text-transform: uppercase;
+                        letter-spacing: 0.08em;
+                        margin-bottom: 0.35rem;
+                    }
+
+                    .metric-value {
+                        font-size: 2rem;
+                        line-height: 1;
+                        font-weight: 700;
+                        letter-spacing: -0.05em;
+                    }
+
+                    .metric-caption {
+                        color: #5b675f;
+                        font-size: 0.86rem;
+                        margin-top: 0.35rem;
+                    }
+
+                    .section-title {
+                        font-size: 1.05rem;
+                        margin: 0 0 0.8rem;
+                        letter-spacing: -0.03em;
+                    }
+
+                    .badge-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                        gap: 0.85rem;
+                    }
+
+                    .badge-item {
+                        padding: 0.95rem;
+                        border: 1px solid rgba(31, 42, 35, 0.08);
+                        border-radius: 16px;
+                        background: rgba(255, 255, 255, 0.82);
+                    }
+
+                    .badge-name {
+                        font-weight: 700;
+                        margin-bottom: 0.2rem;
+                    }
+
+                    .badge-meta,
+                    .muted {
+                        color: #5b675f;
+                        font-size: 0.88rem;
+                    }
+
+                    .badge-state {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.4rem;
+                        margin-top: 0.65rem;
+                        padding: 0.36rem 0.65rem;
+                        border-radius: 999px;
+                        font-size: 0.76rem;
+                        border: 1px solid rgba(31, 42, 35, 0.08);
+                    }
+
+                    .badge-state.unlocked {
+                        background: rgba(47, 110, 87, 0.10);
+                        color: #245745;
+                    }
+
+                    .badge-state.locked {
+                        background: rgba(91, 103, 95, 0.06);
+                        color: #5b675f;
+                    }
+
+                    div[data-testid="stTextInput"] input,
+                    div[data-testid="stDateInput"] input,
+                    div[data-testid="stTextArea"] textarea {
+                        border-radius: 14px !important;
+                        border: 1px solid rgba(31, 42, 35, 0.12) !important;
+                        background: rgba(255, 255, 255, 0.92) !important;
+                        box-shadow: none !important;
+                    }
+
+                    div[data-testid="stButton"] > button,
+                    div[data-testid="stDownloadButton"] > button {
+                        border-radius: 12px;
+                        border: 1px solid rgba(31, 42, 35, 0.12);
+                        background: #ffffff;
+                        color: #1f2a23;
+                        padding: 0.6rem 0.95rem;
+                        transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+                    }
+
+                    div[data-testid="stButton"] > button:hover,
+                    div[data-testid="stDownloadButton"] > button:hover {
+                        transform: translateY(-1px);
+                        border-color: rgba(47, 110, 87, 0.35);
+                        background: #f7fbf8;
+                    }
+
+                    div[data-baseweb="tab-list"] {
+                        gap: 0.5rem;
+                    }
+
+                    button[data-baseweb="tab"] {
+                        border-radius: 999px !important;
+                        padding: 0.65rem 1rem !important;
+                        background: rgba(255, 255, 255, 0.8) !important;
+                        border: 1px solid rgba(31, 42, 35, 0.08) !important;
+                    }
+
+                    button[data-baseweb="tab"][aria-selected="true"] {
+                        background: #2f6e57 !important;
+                        color: #ffffff !important;
+                        border-color: #2f6e57 !important;
+                    }
+
+                    .entry-card {
+                        padding: 1rem;
+                        border-radius: 16px;
+                        background: rgba(255, 255, 255, 0.82);
+                        border: 1px solid rgba(31, 42, 35, 0.08);
+                    }
+
+                    .entry-preview {
+                        color: #5b675f;
+                        line-height: 1.55;
+                    }
+
+                    @media (max-width: 760px) {
+                        .block-container {
+                            padding-top: 1rem;
+                            padding-bottom: 1.5rem;
+                        }
+                    }
+                </style>
+                """,
+                unsafe_allow_html=True,
+        )
+
+
+def metric_card(label: str, value: str, caption: str) -> None:
+        st.markdown(
+                f"""
+                <div class="metric-card">
+                    <div class="metric-label">{label}</div>
+                    <div class="metric-value">{value}</div>
+                    <div class="metric-caption">{caption}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+        )
+
+
+def badge_card(badge: dict[str, str]) -> None:
+        state_class = "unlocked" if badge["unlocked"] else "locked"
+        state_text = "Unlocked" if badge["unlocked"] else "Locked"
+        requirement = f"{badge['threshold']} {'day streak' if badge['type'] == 'streak' else 'entries'}"
+        st.markdown(
+                f"""
+                <div class="badge-item">
+                    <div class="badge-name">{badge['title']}</div>
+                    <div class="badge-meta">{requirement}</div>
+                    <div class="badge-state {state_class}">{state_text}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+        )
+
+
 st.set_page_config(page_title="Daily Dump - Streamlit", page_icon="🗒️", layout="wide")
 init_state()
+inject_styles()
 
 entries: dict[str, str] = st.session_state.entries
 stats = streak_stats(entries)
 badges = unlocked_badges(stats)
 
-st.title("Daily Dump")
-st.caption("Streamlit version for Streamlit Cloud deployment")
+st.markdown(
+    """
+    <div class="hero">
+      <div class="eyebrow">Daily Dump</div>
+      <h1>A calm place to write, review, and grow.</h1>
+      <p>Clean journal UI, TXT exports, and achievements. Built for Streamlit Cloud, without the noisy default shell.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-page = st.sidebar.radio("Page", options=["Journal", "Achievements"], index=0)
+tab_journal, tab_achievements = st.tabs(["Journal", "Achievements"])
 
-if page == "Journal":
-    col1, col2 = st.columns([2, 1])
+with tab_journal:
+    journal_top_left, journal_top_right = st.columns([2, 1], gap="large")
 
-    with col1:
+    with journal_top_left:
+        st.markdown("<div class='section-title'>Write entry</div>", unsafe_allow_html=True)
         selected_date = st.date_input("Entry date", value=st.session_state.current_date)
         st.session_state.current_date = selected_date
         selected_key = date_key(selected_date)
@@ -122,19 +373,24 @@ if page == "Journal":
         content = st.text_area(
             "Write your entry",
             value=entries.get(selected_key, ""),
-            height=280,
-            placeholder="Write anything..."
+            height=320,
+            placeholder="Write anything...",
+            label_visibility="collapsed",
         )
 
         entries[selected_key] = content
 
-        st.caption(f"{len(content)} characters | {word_count(content)} words")
+        text_count_col1, text_count_col2 = st.columns(2)
+        with text_count_col1:
+            st.caption(f"{len(content)} characters")
+        with text_count_col2:
+            st.caption(f"{word_count(content)} words")
 
-    with col2:
-        st.subheader("Stats")
-        st.metric("Current streak", f"{stats['current']} days")
-        st.metric("Longest streak", f"{stats['longest']} days")
-        st.metric("Total entries", stats["total"])
+    with journal_top_right:
+        st.markdown("<div class='section-title'>At a glance</div>", unsafe_allow_html=True)
+        metric_card("Current streak", f"{stats['current']}", "days in a row")
+        metric_card("Longest streak", f"{stats['longest']}", "best run so far")
+        metric_card("Total entries", f"{stats['total']}", "saved writing days")
 
         all_dates = sorted(entries.keys())
         if all_dates:
@@ -143,10 +399,11 @@ if page == "Journal":
                 indent=2,
             )
             st.download_button(
-                "Export JSON",
+                "Export JSON backup",
                 data=json_payload,
                 file_name=f"daily-dump-backup-{date.today().isoformat()}.json",
                 mime="application/json",
+                use_container_width=True,
             )
 
             st.download_button(
@@ -154,11 +411,15 @@ if page == "Journal":
                 data=build_txt(entries, all_dates),
                 file_name=f"daily-dump-all-{date.today().isoformat()}.txt",
                 mime="text/plain",
+                use_container_width=True,
             )
 
-            st.markdown("#### Range export")
-            start = st.date_input("Start", value=parse_date_key(all_dates[0]), key="range_start")
-            end = st.date_input("End", value=parse_date_key(all_dates[-1]), key="range_end")
+            st.markdown("<div class='section-title' style='margin-top:1rem;'>Range export</div>", unsafe_allow_html=True)
+            range_col1, range_col2 = st.columns(2)
+            with range_col1:
+                start = st.date_input("Start", value=parse_date_key(all_dates[0]), key="range_start")
+            with range_col2:
+                end = st.date_input("End", value=parse_date_key(all_dates[-1]), key="range_end")
             if start <= end:
                 selected_dates = [d for d in all_dates if date_key(start) <= d <= date_key(end)]
                 if selected_dates:
@@ -167,11 +428,11 @@ if page == "Journal":
                         data=build_txt(entries, selected_dates),
                         file_name=f"daily-dump-{date_key(start)}-to-{date_key(end)}.txt",
                         mime="text/plain",
+                        use_container_width=True,
                     )
 
-    st.markdown("---")
-    st.subheader("Past entries")
-    query = st.text_input("Search", placeholder="Search date or text")
+    st.markdown("<div class='section-title' style='margin-top:1rem;'>Past entries</div>", unsafe_allow_html=True)
+    query = st.text_input("Search", placeholder="Search date or text", label_visibility="collapsed")
 
     sorted_dates = sorted(entries.keys(), reverse=True)
     if query.strip():
@@ -184,24 +445,31 @@ if page == "Journal":
         st.info("No matching entries.")
     else:
         for d in sorted_dates[:30]:
-            with st.expander(d):
-                st.write(entries.get(d, "(empty entry)"))
-                if st.button(f"Open {d}", key=f"open_{d}"):
-                    st.session_state.current_date = parse_date_key(d)
-                    st.rerun()
+            with st.container(border=True):
+                entry_cols = st.columns([3, 1])
+                with entry_cols[0]:
+                    st.markdown(f"**{d}**")
+                    preview = entries.get(d, "").strip() or "(empty entry)"
+                    st.markdown(f"<div class='entry-preview'>{preview[:220]}</div>", unsafe_allow_html=True)
+                with entry_cols[1]:
+                    if st.button(f"Open", key=f"open_{d}", use_container_width=True):
+                        st.session_state.current_date = parse_date_key(d)
+                        st.rerun()
 
-else:
-    st.subheader("Achievements")
+with tab_achievements:
     unlocked_count = len([b for b in badges if b["unlocked"]])
     completion = round((unlocked_count / len(badges)) * 100) if badges else 0
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Unlocked", f"{unlocked_count}/{len(badges)}")
-    c2.metric("Completion", f"{completion}%")
-    c3.metric("Best streak", f"{stats['longest']} days")
+    metric_cols = st.columns(3, gap="large")
+    with metric_cols[0]:
+        metric_card("Unlocked", f"{unlocked_count}/{len(badges)}", "milestones earned")
+    with metric_cols[1]:
+        metric_card("Completion", f"{completion}%", "badge progress")
+    with metric_cols[2]:
+        metric_card("Best streak", f"{stats['longest']}", "days")
 
-    st.markdown("---")
+    st.markdown("<div class='section-title' style='margin-top:1rem;'>Badge board</div>", unsafe_allow_html=True)
+    st.markdown("<div class='badge-grid'>", unsafe_allow_html=True)
     for badge in badges:
-        state = "Unlocked" if badge["unlocked"] else "Locked"
-        rule = f"{badge['threshold']} {'day streak' if badge['type'] == 'streak' else 'entries'}"
-        st.write(f"- **{badge['title']}**: {state} ({rule})")
+        badge_card(badge)
+    st.markdown("</div>", unsafe_allow_html=True)
